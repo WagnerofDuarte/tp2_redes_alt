@@ -208,13 +208,14 @@ void *game_thread(void *arg) {
             strcpy(multiplier_msg.type, "multiplier");
             multiplier_msg.player_profit = -1.0;
             multiplier_msg.house_profit = house_profit;
-            //broadcast_message(multiplier_msg);
+            // broadcast_message(multiplier_msg);
             pthread_mutex_lock(&players_mutex);
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 if (players[i].sock != 0 && !players[i].has_bet) {
                     send_message_to_client(players[i].sock, multiplier_msg);
                 }
             }
+            pthread_mutex_unlock(&players_mutex);
 
             log_server_event("multiplier", -1, current_multiplier, -1.0, -1, -1.0, -1.0, -1.0, -1.0, house_profit);
             pthread_mutex_unlock(&game_state_mutex);
