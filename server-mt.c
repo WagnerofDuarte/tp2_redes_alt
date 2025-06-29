@@ -29,6 +29,7 @@ struct player {
 
 // Variáveis globais do jogo
 struct player players[MAX_PLAYERS];
+int time_remaining = 10; // Tempo de apostas em segundos
 int num_players = 0;
 pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t game_state_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -160,19 +161,21 @@ void *game_thread(void *arg) {
             sleep(1);
             // Enviar tempo restante para clientes que se conectarem durante a janela de apostas
             pthread_mutex_lock(&players_mutex);
-            for (int j = 0; j < MAX_PLAYERS; j++) {
-                // if (players[j].sock != 0 && !players[j].has_bet) { // Apenas para quem não apostou ainda
-                //     struct aviator_msg timer_msg;
-                //     timer_msg.player_id = -1;
-                //     timer_msg.value = (float)i;
-                //     strcpy(timer_msg.type, "start");
-                //     timer_msg.player_profit = -1.0;
-                //     timer_msg.house_profit = house_profit;
-                //     send_message_to_client(players[j].sock, timer_msg);
-                // }
-            }
+            time_remaining = i;
+            // for (int j = 0; j < MAX_PLAYERS; j++) {
+            //     if (players[j].sock != 0 && !players[j].has_bet) { // Apenas para quem não apostou ainda
+            //         struct aviator_msg timer_msg;
+            //         timer_msg.player_id = -1;
+            //         timer_msg.value = (float)i;
+            //         strcpy(timer_msg.type, "start");
+            //         timer_msg.player_profit = -1.0;
+            //         timer_msg.house_profit = house_profit;
+            //         send_message_to_client(players[j].sock, timer_msg);
+            //     }
+            // }
             pthread_mutex_unlock(&players_mutex);
         }
+        time_remaining = 10;
 
         // 2. Cálculo do ponto de explosão
         pthread_mutex_lock(&game_state_mutex);
@@ -283,7 +286,7 @@ void *client_handler_thread(void *data) {
     if (betting_open) {
         struct aviator_msg start_msg;
         start_msg.player_id = -1;
-        start_msg.value = 10.0; // Placeholder, cliente vai calcular o tempo restante
+        start_msg.value = time_remaining;// 10.0; // Placeholder, cliente vai calcular o tempo restante
         strcpy(start_msg.type, "start");
         start_msg.player_profit = p->current_profit;
         start_msg.house_profit = house_profit;
