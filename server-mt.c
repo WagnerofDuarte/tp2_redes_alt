@@ -316,7 +316,7 @@ void *client_handler_thread(void *data) {
         multiplier_msg.player_profit = p->current_profit;
         multiplier_msg.house_profit = house_profit;
         // strcpy(multiplier_msg.nickname, p->nickname); // Removido
-        send_message_to_client(p->sock, multiplier_msg);
+        // send_message_to_client(p->sock, multiplier_msg);
     } else { // Jogo inativo, aguardando nova rodada
         struct aviator_msg closed_msg;
         closed_msg.player_id = -1;
