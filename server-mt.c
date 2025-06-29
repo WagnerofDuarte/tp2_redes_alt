@@ -150,7 +150,7 @@ void *game_thread(void *arg) {
         struct aviator_msg start_msg;
         start_msg.player_id = -1;
         start_msg.value = 10.0; // 10 segundos
-        // strcpy(start_msg.type, "start");
+        strcpy(start_msg.type, "start");
         start_msg.player_profit = -1.0;
         start_msg.house_profit = house_profit;
         broadcast_message(start_msg);
