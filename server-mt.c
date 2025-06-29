@@ -211,7 +211,7 @@ void *game_thread(void *arg) {
             // broadcast_message(multiplier_msg);
             pthread_mutex_lock(&players_mutex);
             for (int i = 0; i < MAX_PLAYERS; i++) {
-                if (players[i].sock != 0 && !players[i].has_cashed_out) {
+                if (players[i].sock != 0 && !players[i].has_cashed_out && players[i].has_bet) {
                     send_message_to_client(players[i].sock, multiplier_msg);
                 }
             }
