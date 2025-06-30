@@ -58,18 +58,41 @@ void usage(int argc, char **argv)
 void log_server_event(const char *event_type, int player_id, float multiplier, float me, int N, float V, float bet, float payout, float player_profit, float house_profit)
 {
     printf("event=%s | id=%s", event_type, (player_id != -1) ? "" : "*");
-    if (player_id != -1)
+    if (player_id != -1) {
         printf("%d", player_id);
+    }
 
-    const float values[] = {multiplier, me, (float)N, V, bet, payout, player_profit, house_profit};
-    const char *labels[] = {" | m=%.2f", " | me=%.2f", " | N=%.0f", " | V=%.2f", " | bet=%.2f", " | payout=%.2f", " | player_profit=%.2f", " | house_profit=%.2f"};
-
-    for (int i = 0; i < 8; i++)
+    if (strcmp(event_type, "start") == 0)
     {
-        if (values[i] != -1.0f)
-        {
-            printf(labels[i], values[i]);
-        }
+        printf(" | N=%.0f");
+    }
+    else if (strcmp(event_type, "closed") == 0)
+    {
+        printf(" | N=%.0f", " | V=%.2f");
+    }
+    else if (strcmp(event_type, "multiplier") == 0)
+    {
+        printf(" | m=%.2f");
+    }
+    else if (strcmp(event_type, "explode") == 0)
+    {
+        printf(" | m=%.2f");
+    }
+    else if (strcmp(event_type, "bet") == 0)
+    {
+        printf(" | bet=%.2f", " | N=%.0f", " | V=%.2f");
+    }
+    else if (strcmp(event_type, "cashout") == 0)
+    {
+        printf(" | m=%.2f");
+    }
+    else if (strcmp(event_type, "payout") == 0)
+    {
+        printf(" | payout=%.2f");
+    }
+    else if (strcmp(event_type, "profit") == 0)
+    {
+        printf("player_profit=%.2f");
     }
     printf("\n");
 }
@@ -122,12 +145,12 @@ float calculate_explosion_multiplier()
     }
     pthread_mutex_unlock(&players_mutex);
 
-    return (N == 0) ? 1.00f : sqrtf(1 + N + 0.01*V);
+    return (N == 0) ? 1.00f : sqrtf(1 + N + 0.01 * V);
 }
 
 void *game_thread(void *arg)
 {
-    while(num_players == 0)
+    while (num_players == 0)
     {
         continue;
     }

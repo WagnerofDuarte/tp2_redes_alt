@@ -189,7 +189,7 @@ int main(int argc, char **argv)
             ssize_t count = recv(s, &server_msg, sizeof(struct aviator_msg), 0);
             if (count == 0)
             {
-                printf("Servidor desconectou.\n");
+                printf("O servidor caiu, mas sua esperança pode continuar de pé. Até breve!\n");
                 break;
             }
             else if (count == -1)
