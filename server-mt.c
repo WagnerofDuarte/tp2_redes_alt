@@ -127,6 +127,10 @@ float calculate_explosion_multiplier()
 
 void *game_thread(void *arg)
 {
+    while(num_players == 0)
+    {
+        continue;
+    }
     while (1)
     {
         pthread_mutex_lock(&game_state_mutex);
