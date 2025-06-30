@@ -16,7 +16,6 @@
 #define MULTIPLIER_INCREMENT 0.01f
 #define MULTIPLIER_DELAY_US 100000
 
-// Message type constants
 static const char MSG_START[] = "start";
 static const char MSG_CLOSED[] = "closed";
 static const char MSG_MULTIPLIER[] = "multiplier";
@@ -37,13 +36,11 @@ int has_bet;
 int has_cashed_out;
 };
 
-// Global variables
 static struct player players[MAX_PLAYERS];
 static int time_remaining = BETTING_TIME;
 static int num_players = 0;
 static pthread_mutex_t players_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t game_state_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 static float current_multiplier = 1.00f;
 static float explosion_multiplier = 0.0f;
 static float house_profit = 0.0f;
@@ -56,7 +53,6 @@ printf("usage: %s <v4|v6> <server port>\nexample: %s v4 51511\n", argv[0], argv[
 exit(EXIT_FAILURE);
 }
 
-// Optimized logging function
 void log_server_event(const char *event_type, int player_id, float multiplier, float me, int N, float V, float bet, float payout, float player_profit, float house_profit) {
 printf("event=%s | id=%s", event_type, (player_id != -1) ? "" : "*");
 if (player_id != -1) printf("%d", player_id);
@@ -72,7 +68,6 @@ for (int i = 0; i < 8; i++) {
 printf("\n");
 }
 
-// Optimized message creation
 static inline struct aviator_msg create_msg(const char *type, int player_id, float value, float player_profit, float house_profit) {
 struct aviator_msg msg;
 msg.player_id = player_id;
@@ -117,7 +112,6 @@ return (N == 0) ? 1.00f : sqrtf(V / N + 1.0f);
 
 void *game_thread(void *arg) {
 while (1) {
-    // Start betting phase
     pthread_mutex_lock(&game_state_mutex);
     game_active = 0;
     betting_open = 1;
@@ -125,7 +119,6 @@ while (1) {
     explosion_multiplier = 0.0f;
     round_id++;
 
-    // Reset player states
     pthread_mutex_lock(&players_mutex);
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (players[i].sock != 0) {
@@ -140,7 +133,6 @@ while (1) {
     broadcast_message(create_msg(MSG_START, -1, BETTING_TIME, -1.0f, house_profit));
     pthread_mutex_unlock(&game_state_mutex);
 
-    // Betting countdown
     for (int i = BETTING_TIME; i >= 0; i--) {
         sleep(1);
         pthread_mutex_lock(&players_mutex);
@@ -149,7 +141,6 @@ while (1) {
     }
     time_remaining = BETTING_TIME;
 
-    // Close betting and calculate explosion point
     pthread_mutex_lock(&game_state_mutex);
     betting_open = 0;
     explosion_multiplier = calculate_explosion_multiplier();
@@ -159,7 +150,6 @@ while (1) {
     broadcast_message(create_msg(MSG_CLOSED, -1, -1.0f, -1.0f, house_profit));
     pthread_mutex_unlock(&game_state_mutex);
 
-    // Multiplier phase
     while (current_multiplier < explosion_multiplier) {
         pthread_mutex_lock(&game_state_mutex);
         current_multiplier += MULTIPLIER_INCREMENT;
@@ -182,7 +172,6 @@ while (1) {
         usleep(MULTIPLIER_DELAY_US);
     }
 
-    // Explosion phase
     pthread_mutex_lock(&game_state_mutex);
     game_active = 0;
     log_server_event("explode", -1, explosion_multiplier, -1.0f, -1, -1.0f, -1.0f, -1.0f, -1.0f, house_profit);
@@ -215,7 +204,6 @@ struct player *p = (struct player *)data;
 struct aviator_msg received_msg;
 char nickname_buffer[NICKNAME_LEN];
 
-// Receive nickname
 ssize_t count = recv(p->sock, nickname_buffer, NICKNAME_LEN, 0);
 if (count <= 0) {
     if (count == 0) log_server_event("bye", p->id, -1.0f, -1.0f, -1, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
@@ -233,7 +221,6 @@ nickname_buffer[count] = '\0';
 strcpy(p->nickname, nickname_buffer);
 printf("[log] Player %d nickname: %s connected.\n", p->id, p->nickname);
 
-// Send current game state
 pthread_mutex_lock(&game_state_mutex);
 if (betting_open) {
     send_message_to_client(p->sock, create_msg(MSG_START, -1, time_remaining, p->current_profit, house_profit));
@@ -244,7 +231,6 @@ if (betting_open) {
 }
 pthread_mutex_unlock(&game_state_mutex);
 
-// Message handling loop
 while (1) {
     count = recv(p->sock, &received_msg, sizeof(struct aviator_msg), 0);
     if (count == 0) {

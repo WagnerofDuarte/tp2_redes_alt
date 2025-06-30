@@ -11,7 +11,6 @@
 #define BUFSZ 1024
 #define NICKNAME_MAX_LEN 13
 
-// Message type constants
 static const char MSG_START[] = "start";
 static const char MSG_CLOSED[] = "closed";
 static const char MSG_MULTIPLIER[] = "multiplier";
@@ -21,7 +20,6 @@ static const char MSG_PROFIT[] = "profit";
 static const char MSG_BYE[] = "bye";
 static const char MSG_BET[] = "bet";
 static const char MSG_CASHOUT[] = "cashout";
-
 static const char CMD_QUIT[] = "Q";
 static const char CMD_CASHOUT[] = "C";
 
@@ -46,7 +44,6 @@ static inline struct aviator_msg create_client_msg(const char *type, float value
  return msg;
 }
 
-// Handler functions for different message types
 static void handle_start_msg(struct aviator_msg msg, float *player_profit, const char *nickname) {
  printf("Rodada aberta! Digite o valor da aposta ou digite [Q] para sair (%.0f segundos restantes):\n", msg.value);
 }
@@ -91,7 +88,6 @@ static void handle_bye_msg(struct aviator_msg msg, float *player_profit, const c
 }
 
 void handle_server_message(struct aviator_msg msg, float *player_current_profit, const char *nickname) {
- // Message handler structure
  static const struct {
      const char *type;
      void (*handler)(struct aviator_msg, float *, const char *);
